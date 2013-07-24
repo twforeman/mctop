@@ -63,15 +63,3 @@ The following details are displayed in the status bar
 * `keys` - total number of keys in the metrics table
 * `packets` - packets received and dropped by libpcap (% is percentage of packets dropped)
 * `rt` - the time taken to sort and render the stats
-
-## Changelog
-
-* 2012-12-14 - Now compatible with Ruby 1.8.x (tested on 1.8.7-p371)
-
-## Known issues / Gotchas
-
-### ruby-pcap drops packets at high volume
-from my testing the ruby-pcap native interface to libpcap struggles to keep up with high packet rates (in what we see on a production memcache instance) you can keep an eye on the packets recv/drop and loss percentage on the status bar at the bottom of the UI to get an idea of the packet
-
-### No binary protocol support
-There is currently no support for the binary protocol. However, if someone is using it and would like to submit a patch, it would be welcome.

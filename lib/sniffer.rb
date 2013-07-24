@@ -87,9 +87,12 @@ class MemcacheSniffer
 
       if @binary
         # Assume the header starts at the first magic/[opcode/keylen/extlen]/datatype we see.
-        header_start = (packet.raw_data.force_encoding("BINARY") =~ Regexp.new("(\x80|\x81)....\x00", nil, 'n'))
+        # Why use the whole raw packet, when you can just ask for the data portion?
+        # Can't use force_encoding in Ruby 1.8.7 (and strings are already binary in 1.8.7)
+        # Addtionally we should lock the search for the start of the header to the start of the data
+        header_start = (packet.tcp_data =~ Regexp.new("^(\x80|\x81)....\x00", nil, 'n'))
         if header_start
-          data = packet.raw_data[header_start..-1]
+          data = packet.tcp_data[header_start..-1]
           header = parse_header(data)
           # See that we found the right part of the packet for the header.
           if header[:opcode] && header[:opcode] <= 0x22
@@ -150,13 +153,13 @@ class MemcacheSniffer
     @semaphore.synchronize do
       @metrics[:objsize][key] = bytes.to_i
     end
-  end  
+  end
 
   def parse_header(data)
     return {} if data.size < 24
 
     header = Hash[FIELDS.zip(data[0..23].unpack(HEADER))]
-    
+
     if $dump
       header[:magic_name] = MAGIC[header[:magic]]
       header[:opcode_name] = OPCODES[header[:opcode]]
